@@ -29,7 +29,7 @@
 	});
 </script>
 
-{#if navigating.complete || true}
+{#if navigating.complete}
 	<!-- we use the fade animation from svelte/transition  and use the tween.current for the value -->
 	<progress value={p.current} in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}> </progress>
 {/if}
