@@ -4,7 +4,7 @@
 	import { Tween } from 'svelte/motion';
 	import { fade } from 'svelte/transition';
 	// We use Tween to animate the  value change.
-	const p = new Tween(0.35, {
+	const p = new Tween(0, {
 		duration: 200,
 		easing: cubicOut
 	});
