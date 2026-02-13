@@ -1,37 +1,66 @@
 <script>
-	import { navigating } from '$app/state';
-	import { cubicOut } from 'svelte/easing';
-	import { Tween } from 'svelte/motion';
-	import { fade } from 'svelte/transition';
+	import { navigating } from "$app/state";
+	import { cubicOut } from "svelte/easing";
+	import { Tween } from "svelte/motion";
+	import { fade } from "svelte/transition";
+	import { untrack } from "svelte";
+
 	// We use Tween to animate the  value change.
 	const p = new Tween(0, {
 		duration: 200,
-		easing: cubicOut
+		easing: cubicOut,
 	});
+
+	/**
+	 * @type {ReturnType<typeof setTimeout> | null}
+	 */
+	let timeout = null; // we use it to track our pending timeouts
+	let isVisible = $state(false); // we use it to track the visibility of the progress bar
+	function reset() {
+		if (timeout) {
+			clearTimeout(timeout);
+			timeout = null;
+		}
+		p.set(0, { duration: 0 });
+	}
+
 	function increase() {
 		const progressLeft = 1 - p.current;
-		p.set(p.current + progressLeft * 0.01);
+		p.set(p.current + progressLeft * 0.04);
 		if (p.current > 1) {
 			p.set(1);
 		}
 		if (navigating.complete) {
-			const waitTime = Math.round(Math.random() * 250) + 50;
-			setTimeout(increase, waitTime);
+			timeout = setTimeout(increase, 50);
 		} else {
 			p.set(1);
-			setTimeout(() => p.set(0), 50);
+			timeout = setTimeout(() => {
+				isVisible = false;
+				p.set(0, { duration: 0 });
+			}, 150);
 		}
 	}
+
 	$effect(() => {
 		if (navigating.complete) {
-			increase();
+			console.log("calling increase");
+			untrack(() => {
+				isVisible = true;
+				reset();
+				increase();
+			});
 		}
 	});
 </script>
 
-{#if navigating.complete}
+{#if isVisible}
 	<!-- we use the fade animation from svelte/transition  and use the tween.current for the value -->
-	<progress value={p.current} in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}> </progress>
+	<progress
+		value={p.current}
+		in:fade={{ duration: 300 }}
+		out:fade={{ duration: 300 }}
+	>
+	</progress>
 {/if}
 
 <style>
